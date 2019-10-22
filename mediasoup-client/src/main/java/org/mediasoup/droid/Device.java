@@ -29,51 +29,93 @@ public class Device {
     return nativeCanProduce(mNativeDevice, kind);
   }
 
-  public Transport.SendTransport createSendTransport(
-      Transport.SendTransport.Listener listener,
+  public SendTransport createSendTransport(
+      SendTransport.Listener listener,
       String id,
       String iceParameters,
       String iceCandidates,
       String dtlsParameters) {
-    return nativeCreateSendTransport(
-        mNativeDevice, listener, id, iceParameters, iceCandidates, dtlsParameters);
+    return createSendTransport(
+        listener, id, iceParameters, iceCandidates, dtlsParameters, null, null);
   }
 
-  public Transport.RecvTransport createRecvTransport(
-      Transport.RecvTransport.Listener listener,
+  public SendTransport createSendTransport(
+      SendTransport.Listener listener,
+      String id,
+      String iceParameters,
+      String iceCandidates,
+      String dtlsParameters,
+      PeerConnection.Options options,
+      String appData) {
+    return nativeCreateSendTransport(
+        mNativeDevice,
+        listener,
+        id,
+        iceParameters,
+        iceCandidates,
+        dtlsParameters,
+        options,
+        appData);
+  }
+
+  public RecvTransport createRecvTransport(
+      RecvTransport.Listener listener,
       String id,
       String iceParameters,
       String iceCandidates,
       String dtlsParameters) {
+    return createRecvTransport(
+        listener, id, iceParameters, iceCandidates, dtlsParameters, null, null);
+  }
+
+  public RecvTransport createRecvTransport(
+      RecvTransport.Listener listener,
+      String id,
+      String iceParameters,
+      String iceCandidates,
+      String dtlsParameters,
+      PeerConnection.Options options,
+      String appData) {
     return nativeCreateRecvTransport(
-        mNativeDevice, listener, id, iceParameters, iceCandidates, dtlsParameters);
+        mNativeDevice,
+        listener,
+        id,
+        iceParameters,
+        iceCandidates,
+        dtlsParameters,
+        options,
+        appData);
   }
 
   private static native long nativeNewDevice();
 
   private static native void nativeFreeDevice(long device);
 
-  private native void nativeLoad(long device, String routerRtpCapabilities);
+  private static native void nativeLoad(long device, String routerRtpCapabilities);
 
-  private native boolean nativeIsLoaded(long device);
+  private static native boolean nativeIsLoaded(long device);
 
-  private native String nativeGetRtpCapabilities(long device);
+  private static native String nativeGetRtpCapabilities(long device);
 
-  private native boolean nativeCanProduce(long device, String kind);
+  private static native boolean nativeCanProduce(long device, String kind);
 
-  private native Transport.SendTransport nativeCreateSendTransport(
+  private static native SendTransport nativeCreateSendTransport(
       long device,
-      Transport.SendTransport.Listener listener,
+      SendTransport.Listener listener,
       String id,
       String iceParameters,
       String iceCandidates,
-      String dtlsParameters);
+      String dtlsParameters,
+      PeerConnection.Options options,
+      String appData);
 
-  private native Transport.RecvTransport nativeCreateRecvTransport(
+  private static native RecvTransport nativeCreateRecvTransport(
       long device,
-      Transport.RecvTransport.Listener listener,
+      RecvTransport.Listener listener,
       String id,
       String iceParameters,
       String iceCandidates,
-      String dtlsParameters);
+      String dtlsParameters,
+      PeerConnection.Options options,
+      String appData);
 }
