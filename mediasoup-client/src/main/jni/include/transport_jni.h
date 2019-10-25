@@ -25,7 +25,13 @@ private:
 class SendTransportListenerJni : public SendTransport::Listener {
 
 public:
-    SendTransportListenerJni(JNIEnv *jni, const JavaRef<jobject> &j_listener_);
+    SendTransportListenerJni(JNIEnv *env, const JavaRef<jobject> &j_listener_);
+
+    ~SendTransportListenerJni() {
+        if (j_transport_ != nullptr) {
+            webrtc::AttachCurrentThreadIfNeeded()->DeleteGlobalRef(j_transport_);
+        }
+    }
 
     std::future<void> OnConnect(Transport *transport, const json &dtlsParameters) override;
 
@@ -38,13 +44,13 @@ public:
             const json &appData) override;
 
 public:
-    void setTransport(JNIEnv *jni, const JavaRef<jobject> &j_transport) {
-        j_transport_ = ScopedJavaLocalRef<jobject>(jni, j_transport);
+    void SetTransport(JNIEnv *env, const JavaRef<jobject> &j_transport) {
+        j_transport_ = env->NewGlobalRef(j_transport.obj());
     }
 
 private:
-    const ScopedJavaLocalRef<jobject> j_listener_;
-    ScopedJavaLocalRef<jobject> j_transport_;
+    const ScopedJavaGlobalRef<jobject> j_listener_;
+    jobject j_transport_;
 };
 
 class OwnedRecvTransport {
@@ -66,22 +72,26 @@ private:
 class RecvTransportListenerJni : public RecvTransport::Listener {
 
 public:
-    RecvTransportListenerJni(JNIEnv *jni, const JavaRef<jobject> &j_listener_);
+    RecvTransportListenerJni(JNIEnv *env, const JavaRef<jobject> &j_listener_);
 
-    ~RecvTransportListenerJni() = default;
+    ~RecvTransportListenerJni() {
+        if (j_transport_ != nullptr) {
+            webrtc::AttachCurrentThreadIfNeeded()->DeleteGlobalRef(j_transport_);
+        }
+    }
 
     std::future<void> OnConnect(Transport *transport, const json &dtlsParameters) override;
 
     void OnConnectionStateChange(Transport *transport, const std::string &connectionState) override;
 
 public:
-    void setTransport(JNIEnv *jni, const JavaRef<jobject> &j_transport) {
-        j_transport_ = ScopedJavaLocalRef<jobject>(jni, j_transport);
+    void SetTransport(JNIEnv *env, const JavaRef<jobject> &j_transport) {
+        j_transport_ = env->NewGlobalRef(j_transport.obj());
     }
 
 private:
-    const ScopedJavaLocalRef<jobject> j_listener_;
-    ScopedJavaLocalRef<jobject> j_transport_;
+    const ScopedJavaGlobalRef<jobject> j_listener_;
+    jobject j_transport_;
 };
 
 }

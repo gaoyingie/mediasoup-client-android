@@ -2,7 +2,7 @@
 #define GEN_MEDIASOUP_CLIENT_ANDROID_SEND_TRANSPORT_JNI_H
 
 #include <jni.h>
-#include "sdk/android/src/jni/jni_generator_helper.h"
+#include <sdk/android/src/jni/jni_generator_helper.h>
 
 const char kClassPath_org_mediasoup_droid_SendTransport[] =
         "org/mediasoup/droid/SendTransport";
@@ -52,15 +52,13 @@ base::android::ScopedJavaLocalRef<jobject> Java_Mediasoup_SendTransport_Construc
             "(J)V",
             &g_org_mediasoup_droid_SendTransport_Constructor);
 
-    jobject ret =
-            env->NewObject(clazz,
-                           call_context.base.method_id, nativeSendTransport);
+    jobject ret = env->NewObject(clazz, call_context.base.method_id, nativeSendTransport);
     return base::android::ScopedJavaLocalRef<jobject>(env, ret);
 }
 
 static std::atomic<jmethodID> g_org_mediasoup_droid_SendTransport_Listener_onProduce(nullptr);
 
-static std::string
+static base::android::ScopedJavaLocalRef<jstring>
 Java_Mediasoup_Listener_OnProduce(JNIEnv *env, const base::android::JavaRef<jobject> &obj,
                                   const base::android::JavaRef<jobject> &transport,
                                   const base::android::JavaRef<jstring> &kind,
@@ -75,13 +73,18 @@ Java_Mediasoup_Listener_OnProduce(JNIEnv *env, const base::android::JavaRef<jobj
             base::android::MethodID::TYPE_INSTANCE>(
             env,
             clazz,
-            "onConnectionStateChange",
+            "onProduce",
             "(Lorg/mediasoup/droid/Transport;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;",
             &g_org_mediasoup_droid_SendTransport_Listener_onProduce);
 
-    env->CallVoidMethod(obj.obj(),
-                        call_context.base.method_id, transport.obj(), kind.obj(),
-                        rtpParameters.obj(), appData.obj());
+    jstring result = static_cast<jstring>(
+            env->CallObjectMethod(obj.obj(),
+                                  call_context.base.method_id,
+                                  transport.obj(),
+                                  kind.obj(),
+                                  rtpParameters.obj(),
+                                  appData.obj()));
+    return base::android::ScopedJavaLocalRef<jstring> (env, result);
 }
 
 #endif //GEN_MEDIASOUP_CLIENT_ANDROID_SEND_TRANSPORT_JNI_H

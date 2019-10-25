@@ -1,8 +1,8 @@
 package org.mediasoup.droid;
 
-import org.mediasoup.droid.hack.Utils;
 import org.webrtc.CalledByNative;
 import org.webrtc.MediaStreamTrack;
+import org.webrtc.RTCUtils;
 import org.webrtc.RtpParameters;
 
 import java.util.List;
@@ -12,6 +12,7 @@ public class SendTransport extends Transport {
   public interface Listener extends Transport.Listener {
 
     /** @return producer Id */
+    @CalledByNative
     String onProduce(Transport transport, String kind, String rtpParameters, String appData);
   }
 
@@ -23,6 +24,7 @@ public class SendTransport extends Transport {
   }
 
   public void dispose() {
+    checkTransportExists();
     nativeFreeTransport(mNativeTransport);
     mNativeTransport = 0;
   }
@@ -30,6 +32,12 @@ public class SendTransport extends Transport {
   @CalledByNative
   long getNativeOwnedSendTransport() {
     return mNativeTransport;
+  }
+
+  private void checkTransportExists() {
+    if (mNativeTransport == 0) {
+      throw new IllegalStateException("SendTransport has been disposed.");
+    }
   }
 
   @Override
@@ -40,20 +48,18 @@ public class SendTransport extends Transport {
   public Producer produce(
       Producer.Listener listener,
       MediaStreamTrack track,
-      List<RtpParameters> parameters,
-      String codecOptions) {
-    return produce(listener, track, parameters, codecOptions, null);
-  }
-
-  public Producer produce(
-      Producer.Listener listener,
-      MediaStreamTrack track,
-      List<RtpParameters> parameters,
+      List<RtpParameters.Encoding> encodings,
       String codecOptions,
       String appData) {
-    long nativeTrack = Utils.getNativeMediaStreamTrack(track);
+    checkTransportExists();
+    long nativeTrack = RTCUtils.getNativeMediaStreamTrack(track);
+    RtpParameters.Encoding[] pEncodings = null;
+    if (encodings != null && !encodings.isEmpty()) {
+      pEncodings = new RtpParameters.Encoding[encodings.size()];
+      encodings.toArray(pEncodings);
+    }
     return nativeProduce(
-        mNativeTransport, listener, nativeTrack, parameters, codecOptions, appData);
+        mNativeTransport, listener, nativeTrack, pEncodings, codecOptions, appData);
   }
 
   private static native long nativeGetNativeTransport(long nativeTransport);
@@ -62,7 +68,7 @@ public class SendTransport extends Transport {
       long mNativeTransport,
       Producer.Listener listener,
       long track,
-      List<RtpParameters> parameters,
+      RtpParameters.Encoding[] encodings,
       String codecOptions,
       String appData);
 

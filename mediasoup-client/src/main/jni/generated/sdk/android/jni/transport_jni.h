@@ -2,7 +2,7 @@
 #define GEN_MEDIASOUP_CLIENT_ANDROID_TRANSPORT_JNI_H
 
 #include <jni.h>
-#include "sdk/android/src/jni/jni_generator_helper.h"
+#include <sdk/android/src/jni/jni_generator_helper.h>
 
 const char kClassPath_org_mediasoup_droid_Transport[] =
         "org/mediasoup/droid/Transport";
@@ -81,6 +81,9 @@ Java_Mediasoup_Listener_OnConnect(JNIEnv *env, const base::android::JavaRef<jobj
                         call_context.base.method_id, transport.obj(), dtlsParameters.obj());
 }
 
+static std::atomic<jmethodID> g_org_mediasoup_droid_Transport_Listener_onConnectionStateChange(
+        nullptr);
+
 static void
 Java_Mediasoup_Listener_OnConnectionStateChange(JNIEnv *env,
                                                 const base::android::JavaRef<jobject> &obj,
@@ -97,7 +100,7 @@ Java_Mediasoup_Listener_OnConnectionStateChange(JNIEnv *env,
             clazz,
             "onConnectionStateChange",
             "(Lorg/mediasoup/droid/Transport;Ljava/lang/String;)V",
-            &g_org_mediasoup_droid_Transport_Listener_onConnect);
+            &g_org_mediasoup_droid_Transport_Listener_onConnectionStateChange);
 
     env->CallVoidMethod(obj.obj(),
                         call_context.base.method_id, transport.obj(), connectionState.obj());
